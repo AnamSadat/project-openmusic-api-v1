@@ -13,6 +13,7 @@
     "no-underscore-dangle": "off",
     "camelcase": "off",
     "object-curly-newline": "off",
+    "no-thenable": "off",
     "import/extensions": [
       "error",
       "ignorePackages",
