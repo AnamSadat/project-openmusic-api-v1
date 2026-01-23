@@ -4,8 +4,9 @@ import InvariantError from '../../exceptions/InvariantError.js';
 import NotFoundError from '../../exceptions/NotFoundError.js';
 
 class SongServices {
-  constructor() {
+  constructor(cacheService) {
     this._pool = new Pool();
+    this._cacheService = cacheService;
   }
 
   async addSong({ title, year, performer, genre, duration, albumId }) {
@@ -77,6 +78,8 @@ class SongServices {
 
     if (!result.rows.length) throw new NotFoundError('Song not found, failed to update');
 
+    await this._cacheService.delete(`song:${id}`);
+
     return result;
   }
 
@@ -89,9 +92,18 @@ class SongServices {
     const result = await this._pool.query(query);
 
     if (!result.rows.length) throw new NotFoundError('Song not found, could not delete');
+
+    await this._cacheService.delete(`song:${id}`);
   }
 
   async getDetailSong(id) {
+    const cacheKey = `song:${id}`;
+    const cached = await this._cacheService.get(cacheKey);
+
+    if (cached) {
+      return { song: JSON.parse(cached), isCache: true };
+    }
+
     const query = {
       text: 'SELECT * FROM songs WHERE id = $1',
       values: [id],
@@ -101,7 +113,9 @@ class SongServices {
 
     if (!result.rows.length) throw new NotFoundError('Song with the given ID was not found');
 
-    return result.rows[0];
+    await this._cacheService.set(cacheKey, JSON.stringify(result.rows[0]));
+
+    return { song: result.rows[0], isCache: false };
   }
 }
 

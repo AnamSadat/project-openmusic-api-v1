@@ -6,8 +6,9 @@ import ForbiddenError from '../../exceptions/ForbiddenError.js';
 import AuthError from '../../exceptions/AuthError.js';
 
 class PlaylistServices {
-  constructor() {
+  constructor(cacheService) {
     this._pool = new Pool();
+    this._cacheService = cacheService;
   }
 
   async addPlaylist(name, uername) {
@@ -87,7 +88,9 @@ class PlaylistServices {
       values: [playlistId, userId],
     });
 
-    if (!checkAccess.rows.length) throw new ForbiddenError("You don't have access to this playlist");
+    if (!checkAccess.rows.length) {
+      throw new ForbiddenError("You don't have access to this playlist");
+    }
 
     const id = nanoid(16);
     const query = {
@@ -98,6 +101,8 @@ class PlaylistServices {
     const result = await this._pool.query(query);
 
     if (!result.rows.length) throw new InvariantError('Failed to add the song to the playlist');
+
+    await this._cacheService.delete(`playlist-songs:${playlistId}`);
   }
 
   async verifyPlaylistOwner(playlistId, owner) {
@@ -121,6 +126,13 @@ class PlaylistServices {
     if (!credentials) throw new AuthError('No credentials provided');
 
     await this.verifyPlaylistAccess(id, credentials);
+
+    const cacheKey = `playlist-songs:${id}`;
+    const cached = await this._cacheService.get(cacheKey);
+
+    if (cached) {
+      return { playlist: JSON.parse(cached), isCache: true };
+    }
 
     const query = {
       text: `
@@ -149,12 +161,16 @@ class PlaylistServices {
         performer: row.performer,
       }));
 
-    return {
+    const playlist = {
       id: playlistId,
       name,
       username,
       songs,
     };
+
+    await this._cacheService.set(cacheKey, JSON.stringify(playlist));
+
+    return { playlist, isCache: false };
   }
 
   async deleteSongByIdPlaylist(id, credentials, playlistId) {
@@ -169,6 +185,8 @@ class PlaylistServices {
     const result = await this._pool.query(query);
 
     if (!result.rows.length) console.log('No song was deleted from the playlist');
+
+    await this._cacheService.delete(`playlist-songs:${playlistId}`);
   }
 
   async verifyPlaylistAccess(playlistId, userId) {

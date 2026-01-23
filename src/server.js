@@ -32,7 +32,7 @@ import UserServices from './services/postgres/UserServices.js';
 import AuthServices from './services/postgres/AuthServices.js';
 import PlaylistServices from './services/postgres/PlaylistServices.js';
 import CollabServices from './services/postgres/CollabServices.js';
-import ProdecureServices from './services/rabbitmq/ProducerServices.js';
+import ProducerServices from './services/rabbitmq/ProducerServices.js';
 import StorageLocalService from './services/storage/StorageLocalServices.js';
 import CacheService from './services/redis/CacheServices.js';
 import StorageCloudService from './services/storage/StorageCloudServices.js';
@@ -47,10 +47,10 @@ import colorStatus from './utils/logger.js';
 const init = async () => {
   const cacheService = new CacheService();
   const albumService = new AlbumServices(cacheService);
-  const songService = new SongServices();
+  const songService = new SongServices(cacheService);
   const usersService = new UserServices();
   const authService = new AuthServices();
-  const playlistService = new PlaylistServices();
+  const playlistService = new PlaylistServices(cacheService);
   const collabServices = new CollabServices();
   const storageLocalService = new StorageLocalService(`${process.cwd()}/uploads`);
   const storageCloudService = new StorageCloudService();
@@ -205,7 +205,7 @@ const init = async () => {
     {
       plugin: _exports,
       options: {
-        exportService: ProdecureServices,
+        exportService: ProducerServices,
         playlistService,
         validator: ExportValidator,
       },

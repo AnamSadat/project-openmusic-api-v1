@@ -73,7 +73,7 @@ class PlaylistHandler {
     const { id: credentials } = request.auth.credentials;
     const { id } = request.params;
 
-    const playlist = await this._playlistService.getSongByIdPlaylist(id, credentials);
+    const { playlist, isCache } = await this._playlistService.getSongByIdPlaylist(id, credentials);
 
     const response = h
       .response({
@@ -83,6 +83,8 @@ class PlaylistHandler {
         },
       })
       .code(200);
+
+    if (isCache) return response.header('X-Data-Source', 'cache');
 
     return response;
   }
