@@ -19,6 +19,7 @@ const envSchema = Joi.object({
   // Redis / ElastiCache
   REDIS_SERVER: Joi.string().when('NODE_ENV', { is: 'development', then: Joi.required() }),
   REDIS_PORT: Joi.string().when('NODE_ENV', { is: 'development', then: Joi.required() }),
+  REDIS_PASSWORD: Joi.string().allow('').optional(),
   AWS_ELASTICACHE: Joi.string().when('NODE_ENV', { is: 'production', then: Joi.required() }),
 
   // aws s3

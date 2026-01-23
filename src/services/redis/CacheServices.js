@@ -8,6 +8,7 @@ class CacheService {
         host: config.redis.host,
         ...(config.app.node_env !== 'production' && { port: config.redis.port }),
       },
+      ...(config.redis.password && { password: config.redis.password }),
     });
 
     this._client.on('error', (error) => {

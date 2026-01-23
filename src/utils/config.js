@@ -27,6 +27,7 @@ const config = {
     host:
       validation.NODE_ENV !== 'production' ? validation.REDIS_SERVER : validation.AWS_ELASTICACHE,
     port: validation.REDIS_PORT,
+    password: validation.REDIS_PASSWORD,
   },
   aws: {
     s3: {
