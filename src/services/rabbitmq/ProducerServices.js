@@ -1,7 +1,7 @@
 import amqp from 'amqplib';
 import config from '../../utils/config.js';
 
-const ProdecureServices = {
+const ProducerServices = {
   sendMessage: async (queue, message) => {
     const connection = await amqp.connect(config.rabbitMq.server);
     const channel = await connection.createChannel();
@@ -17,4 +17,4 @@ const ProdecureServices = {
   },
 };
 
-export default ProdecureServices;
+export default ProducerServices;
