@@ -42,6 +42,7 @@ import TokenManager from './tokenize/TokenManager.js';
 
 // utils
 import config from './utils/config.js';
+import colorStatus from './utils/logger.js';
 
 const init = async () => {
   const cacheService = new CacheService();
@@ -62,6 +63,15 @@ const init = async () => {
         origin: ['*'],
       },
     },
+  });
+
+  server.events.on('response', (request) => {
+    const method = request.method.toUpperCase();
+    const { path } = request;
+    const statusCode = request.response?.statusCode ?? 500;
+    const ms = request.info.responded - request.info.received;
+
+    console.log(`${method} ${path} ${colorStatus(statusCode)} ${ms}ms`);
   });
 
   server.ext('onPreResponse', (request, h) => {
