@@ -31,7 +31,7 @@ OpenMusic API adalah aplikasi backend untuk mengelola data lagu, dibangun menggu
 - **Export Playlist:** Mengekspor lagu pada playlist melalui **RabbitMQ**, hasil ekspor dikirimkan melalui email menggunakan **Nodemailer**.
 - **Upload Album Cover:** Mengunggah sampul album (lokal/S3) dengan validasi ukuran & tipe file, dan menampilkannya di endpoint detail album.
 - **Album Likes:** Pengguna bisa menyukai atau batal menyukai album. Tiap pengguna hanya bisa menyukai album satu kali.
-- **Server-Side Cache:** Jumlah like album menggunakan cache Redis (bertahan 30 menit), dengan header `X-Data-Source: cache` bila respons dari cache.
+- **Server-Side Cache:** Menggunakan Redis untuk caching data (jumlah like album, detail lagu, lagu dalam playlist), dengan header `X-Data-Source: cache` bila respons dari cache.
 
 ---
 
@@ -46,7 +46,7 @@ OpenMusic API adalah aplikasi backend untuk mengelola data lagu, dibangun menggu
 - **JWT (JSON Web Token)** untuk autentikasi & otorisasi
 - **RabbitMQ** (Message Broker untuk ekspor playlist → [openmusic-api-consumer](https://github.com/AnamSadat/openmusic-api-consumer))
 - **Nodemailer** (Pengiriman email hasil ekspor playlist di sisi [openmusic-api-consumer](https://github.com/AnamSadat/openmusic-api-consumer))
-- **Redis** (Server-side caching untuk jumlah like album)
+- **Redis** (Server-side caching untuk jumlah like album, detail lagu, dan playlist songs)
 - **Multer / AWS S3 SDK** (Upload dan penyimpanan file sampul album)
 
 ---
@@ -95,7 +95,8 @@ RABBITMQ_SERVER=amqp://localhost
 
 # redis
 REDIS_SERVER=localhost
-REDIS_PORT=
+REDIS_PORT=6379
+REDIS_PASSWORD=
 ```
 
 - `.env.production`
